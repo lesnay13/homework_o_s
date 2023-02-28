@@ -16,7 +16,7 @@ char my_fifo_name [128];
 
 int connect_system(pid_t, int);
 void num_to_text(char*);
-void text_to_num(char*);
+void text_to_num(char*,int, pid_t);
 void store(char*, pid_t, int, int);
 void recall(pid_t, int, int);
 
@@ -65,14 +65,14 @@ int main()
         read(request_fifo_fd, &num_params, sizeof(int));
         read(request_fifo_fd, &size_params, sizeof(int));*/
 
-        memcpy(&process_id, buffer, sizeof(process_id));
-        memcpy(&system_call, buffer + sizeof(process_id), sizeof(system_call));
-        memcpy(&num_params, buffer + sizeof(process_id) + sizeof(system_call), sizeof(num_params));
-        memcpy(&size_params, buffer + sizeof(process_id) + sizeof(system_call) + sizeof(num_params), sizeof(size_params));
+        memcpy(&client_pid, buffer, sizeof(client_pid));
+        memcpy(&system_call_number, buffer + sizeof(client_pid), sizeof(system_call_number));
+        memcpy(&num_params, buffer + sizeof(client_pid) + sizeof(system_call_number), sizeof(num_params));
+        memcpy(&size_params, buffer + sizeof(client_pid) + sizeof(system_call_number) + sizeof(num_params), sizeof(size_params));
         printf("Trying to read params...\n");
-        for (i = 0; i < num_params; i++) {
+        for (int i = 0; i < num_params; i++) {
             params[i] = malloc(size_params);
-            memcpy(params[i], buffer + sizeof(process_id) + sizeof(system_call) + sizeof(num_params) + sizeof(size_params) + i * size_params, size_params);
+            memcpy(params[i], buffer + sizeof(client_pid) + sizeof(system_call_number) + sizeof(num_params) + sizeof(size_params) + i * size_params, size_params);
         }
         printf("Received %ls \n", &params);
         // Allocate memory for the parameters
@@ -121,7 +121,7 @@ int main()
                 num_to_text(params);
                 break;
             case 3:
-                text_to_num(params);
+                text_to_num(params, response_fifo_fd,client_pid);
                 break;
             case 4:
                 store(params,client_pid, response_fifo_fd, request_fifo_fd);
@@ -144,7 +144,6 @@ int main()
 
         // Free the memory for the parameters
         free(params);
-        free(num);
     }
 
     // Close the request FIFO queue
@@ -261,7 +260,7 @@ void num_to_text(char* num)
     free(num);
 }
 
-void text_to_num(char *num)
+void text_to_num(char *num, int response_fifo_fd, pid_t client_pid)
 {
   // Define lookup table for text-to-number conversion
     const char* number_strings[] = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
@@ -282,11 +281,11 @@ void text_to_num(char *num)
     int response_size = sizeof(number_value);
     char* response_buffer = (char*) malloc(response_size);
     memcpy(response_buffer, &number_value, response_size);
-    write(client_fifo_fd, response_buffer, response_size);
+    write(response_fifo_fd, response_buffer, response_size);
     free(response_buffer);
     
     // Print message to the screen indicating the system call received
-    printf("Client pid: %d\nSystem Call Requested: 3 with 1 parameter which is:\nParam1=%s result=%d\n", process_id, text_number, number_value);
+    printf("Client pid: %d\nSystem Call Requested: 3 with 1 parameter which is:\nParam1=%s result=%d\n", client_pid, num, number_value);
 }
 
 void store(char *params, pid_t client_pid, int response_fifo_fd, int request_fifo_fd)
