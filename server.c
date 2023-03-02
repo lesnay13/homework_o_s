@@ -71,7 +71,7 @@ int main()
         memcpy(&size_params, buffer + sizeof(client_pid) + sizeof(system_call_number) + sizeof(num_params), sizeof(size_params));
         printf("Trying to read params...\n");
         for (int i = 0; i < num_params; i++) {
-            params[i] = malloc(size_params);
+            params[i] =(char*) malloc(size_params*2);
             memcpy(params[i], buffer + sizeof(client_pid) + sizeof(system_call_number) + sizeof(num_params) + sizeof(size_params) + i * size_params, size_params);
         }
         printf("Received %ls \n", &params);
