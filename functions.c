@@ -1,17 +1,13 @@
 #include <stdio.h>
 #include <string.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <stdlib.h>
 
-// Server Fifo
+/*Server Fifo
 #define REQUEST_FIFO "request.fifo"
 #define MAX_PARAMS 10
 #define MAX_MSG_SIZE 256
 // declarations
-char my_fifo_name [128];
+char my_fifo_name [128];*/
 
 int connect_system(pid_t, int);
 void num_to_text(char*);
@@ -19,7 +15,16 @@ void text_to_num(char*,int, pid_t);
 void store(char*, pid_t, int, int);
 void recall(pid_t, int, int);
 
-int connect_system(pid_t client_pid, int response_fifo_fd)
+int main() {
+
+    num_to_text("5");
+    num_to_text("35");
+    num_to_text("533");
+    num_to_text("9580");
+    return 0;
+}
+
+/*int connect_system(pid_t client_pid, int response_fifo_fd)
 {
     // Open the response FIFO queue for writing
     char response_fifo_name[200];
@@ -32,7 +37,7 @@ int connect_system(pid_t client_pid, int response_fifo_fd)
     }
     printf("Opened client FIFO for writing...\n");
     return 0;
-}
+}*/
 
 void num_to_text(char* num)
 {
@@ -87,9 +92,7 @@ void num_to_text(char* num)
         if (len >= 3) {
             if (*num - '0' != 0) {
                 printf("%s ", single_digits[*num - '0']);
-                printf("%s ",
-                       tens_power[len - 3]); // here len can
-                                             // be 3 or 4
+                printf("%s ",tens_power[len - 3]); // here len can be 3 or 4
             }
             --len;
         }
@@ -124,10 +127,9 @@ void num_to_text(char* num)
         }
         ++num;
     }
-    free(num);
 }
 
-void text_to_num(char *num, int response_fifo_fd, pid_t client_pid)
+/*void text_to_num(char *num, int response_fifo_fd, pid_t client_pid)
 {
   // Define lookup table for text-to-number conversion
     const char* number_strings[] = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"};
@@ -181,4 +183,4 @@ void recall(pid_t client_pid, int response_fifo_fd, int request_fifo_fd)
         perror("Error writing to client FIFO");
         
     }
-}
+}*/
