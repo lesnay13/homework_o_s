@@ -9,7 +9,7 @@
 #define MAX_PARAM_LENGTH 128
 #define SERVER_FIFO_NAME "./server_fifo"
 #define CLIENT_FIFO_PREFIX "./client_fifo_"
-#define MAX_CLIENTS 10
+#define MAX_BUFFFER 1000
 
 //Useful for debugging
 void pid_printf(const char* format, ...) {
@@ -20,7 +20,6 @@ void pid_printf(const char* format, ...) {
     vfprintf(stdout, format, args);
     va_end(args);
 }
-
 
 void text_to_num(char *num, int response_fifo_fd, pid_t client_pid)
 {
@@ -141,6 +140,9 @@ void num_to_text(char* num)
 }
 
 int main() {
+    // Variables to print buffer request
+    char request_bufffer[MAX_BUFFFER] = {0};
+    int print_position=0;
 
     // Make server FIFO
     pid_printf("Creating server FIFO\n");
@@ -187,17 +189,18 @@ int main() {
         read(server_fifo_fd, &system_call_number, sizeof(system_call_number));
         read(server_fifo_fd, &num_params, sizeof(num_params));
         read(server_fifo_fd, &size_params, sizeof(size_params));
-        read(server_fifo_fd, optional_param, MAX_PARAM_LENGTH);
+        read(server_fifo_fd, &optional_param, MAX_PARAM_LENGTH);
         pid_printf("Parsed client request successfully! \n");
 
         // PID print is ugly here so not using it
-        printf("----------------------------------------------------\n");
-        printf("Client pid: %d\n", client_pid);
-        printf("System call requested: %d\n", system_call_number);
-        printf(" with %d", num_params);
-        printf(" parameter: %s\n", optional_param);
-        printf(" size of params: %d\n", size_params);
-        printf("----------------------------------------------------\n");
+        pid_printf("----------------------------------------------------\n");
+        print_position += snprintf(request_bufffer + print_position, MAX_BUFFFER - print_position, "Client pid: %d\n", client_pid);
+        print_position += snprintf(request_bufffer + print_position, MAX_BUFFFER - print_position, "System call requested: %d\n", system_call_number);
+        print_position += snprintf(request_bufffer + print_position, MAX_BUFFFER - print_position, "with %d ", num_params);
+        print_position += snprintf(request_bufffer + print_position, MAX_BUFFFER - print_position, "parameter: %s\n", optional_param);
+        print_position += snprintf(request_bufffer + print_position, MAX_BUFFFER - print_position, "size of params: %d", size_params);
+        printf("%s\n", request_bufffer);
+        pid_printf("----------------------------------------------------\n");
 
         // Fork so that server can handle multiple clients
         pid_t check_pid = fork();
@@ -266,12 +269,10 @@ int main() {
                     break;
                 case 2:
                     //Verify client request
-                    if(num_params !=1){
+                    if(system_call_number !=2){
                         printf("Invalid request from client %d: system call %d with parameters %d\n",client_pid,system_call_number,num_params);
                         return-1;
                     }
-                    //convert request
-                    read(client_fifo_fd,optional_param,MAX_PARAM_LENGTH);
 
                     num_to_text(optional_param);
 

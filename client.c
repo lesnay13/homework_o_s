@@ -136,12 +136,23 @@ pid_printf("Connection to server established... \n");
                     sprintf(optional_param, "%s", empty_string);
                 }
 
+                // PID print is ugly here so not using it
+                printf("----------------------------------------------------\n");
+                printf("Client pid: %d\n", pid);
+                printf("System call requested: %d\n", system_call_number);
+                printf("with %d ", num_params);
+                printf("parameter: %s\n", optional_param);
+                printf("size of params: %d\n", size_params);
+                printf("----------------------------------------------------\n");
+
                 // Write the system call information to the request FIFO queue
                 write(server_fifo_fd, &pid, sizeof(pid_t));
                 write(server_fifo_fd, &system_call_number, sizeof(int));
                 write(server_fifo_fd, &num_params, sizeof(int));
                 write(server_fifo_fd, &size_params, sizeof(int));
                 write(server_fifo_fd, &optional_param, sizeof(optional_param));
+
+
                 pid_printf("Sent client request to server... \n");
                 
                 break;
