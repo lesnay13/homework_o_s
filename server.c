@@ -104,10 +104,15 @@ void num_to_text(char* num)
                 printf("%s ", single_digits[*num - '0']);
                 printf("%s ",tens_power[len - 3]); // here len can be 3 or 4
             }
-            --len;
+*/
+// ------------------------------
+
+
+            // Done talking to client so close FIFO and exit fork/child here
+            close(client_fifo_fd);
+            unlink(client_fifo_name);
+            exit(0);
         }
- 
-        /* Code path for last 2 digits */
         else {
             /* Need to explicitly handle 10-19. Sum of the
             two digits is used as index of "two_digits"
